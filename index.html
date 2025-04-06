@@ -1,57 +1,58 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>Arduino Microとの通信</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebUSB 接続テスト</title>
 </head>
 <body>
-  <h1>Arduino Micro - シリアル通信</h1>
-  <button id="connect">Arduino Microと接続</button><br><br>
+    <h1>WebUSB 接続テスト</h1>
+    <button id="connect">接続</button>
 
-  <input id="textInput" type="text" placeholder="1または0を入力">
-  <button id="send">送信</button>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let device;
 
-  <pre id="log"></pre>
+            document.getElementById('connect').addEventListener('click', async () => {
+                console.log("ボタンクリック: 接続開始");
 
-  <script>
-    let port;
+                try {
+                    console.log("🔌 接続中...");
 
-    // ログを表示する関数
-    function log(msg) {
-      document.getElementById('log').textContent += msg + '\n';
-    }
+                    // Arduinoデバイスを選択
+                    device = await navigator.usb.requestDevice({
+                        filters: [{ vendorId: 0x2341 }] // ArduinoのベンダーID
+                    });
 
-    // Arduinoと接続する処理
-    document.getElementById('connect').addEventListener('click', async () => {
-      try {
-        port = await navigator.serial.requestPort();  // 接続ポートを選択
-        await port.open({ baudRate: 9600 });  // シリアルポートを開く
-        log("Arduino Microと接続しました");
-      } catch (err) {
-        log("接続エラー: " + err);
-      }
-    });
+                    console.log("デバイスが選択されました:", device);
+                    console.log("デバイスの設定数:", device.configurations.length);
 
-    // データ送信処理
-    document.getElementById('send').addEventListener('click', async () => {
-      if (!port) {
-        log("Arduino Microに接続していません");
-        return;
-      }
+                    // デバイスをオープン
+                    await device.open();  // デバイスを開く
+                    console.log("🔧 デバイスオープン完了");
 
-      const text = document.getElementById('textInput').value;
-      const encoder = new TextEncoder();
-      const data = encoder.encode(text + '\n');  // 改行で送るとArduino側で受け取りやすい
+                    // 利用可能な設定番号を確認して選択
+                    for (let i = 0; i < device.configurations.length; i++) {
+                        console.log(`設定番号 ${i}:`, device.configurations[i]);
+                    }
 
-      try {
-        const writer = port.writable.getWriter();
-        await writer.write(data);  // データをArduinoに送信
-        writer.releaseLock();
-        log("送信: " + text);
-      } catch (err) {
-        log("送信エラー: " + err);
-      }
-    });
-  </script>
+                    // 設定を選択（デフォルトの設定番号0を試してみる）
+                    await device.selectConfiguration(0);  // 設定番号0を選択
+                    console.log("🔧 設定選択完了");
+
+                    // 設定選択後のインターフェース情報を表示
+                    console.log("インターフェース情報:", device.interfaces);
+
+                    // インターフェースをクレーム
+                    await device.claimInterface(0);  // インターフェース番号0をクレーム
+                    console.log("✅ インターフェースクレーム完了");
+
+                } catch (err) {
+                    console.error("❌ エラー:", err);
+                    alert(`エラー: ${err.message}`);
+                }
+            });
+        });
+    </script>
 </body>
 </html>
