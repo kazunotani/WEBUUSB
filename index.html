@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Arduino Microとの通信</title>
+</head>
+<body>
+  <h1>Arduino Micro - シリアル通信</h1>
+  <button id="connect">Arduino Microと接続</button><br><br>
+
+  <input id="textInput" type="text" placeholder="1または0を入力">
+  <button id="send">送信</button>
+
+  <pre id="log"></pre>
+
+  <script>
+    let port;
+
+    // ログを表示する関数
+    function log(msg) {
+      document.getElementById('log').textContent += msg + '\n';
+    }
+
+    // Arduinoと接続する処理
+    document.getElementById('connect').addEventListener('click', async () => {
+      try {
+        port = await navigator.serial.requestPort();  // 接続ポートを選択
+        await port.open({ baudRate: 9600 });  // シリアルポートを開く
+        log("Arduino Microと接続しました");
+      } catch (err) {
+        log("接続エラー: " + err);
+      }
+    });
+
+    // データ送信処理
+    document.getElementById('send').addEventListener('click', async () => {
+      if (!port) {
+        log("Arduino Microに接続していません");
+        return;
+      }
+
+      const text = document.getElementById('textInput').value;
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text + '\n');  // 改行で送るとArduino側で受け取りやすい
+
+      try {
+        const writer = port.writable.getWriter();
+        await writer.write(data);  // データをArduinoに送信
+        writer.releaseLock();
+        log("送信: " + text);
+      } catch (err) {
+        log("送信エラー: " + err);
+      }
+    });
+  </script>
+</body>
+</html>
