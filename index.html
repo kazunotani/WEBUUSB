@@ -18,19 +18,24 @@
       document.getElementById("log").textContent += msg + "\n";
     };
 
-    document.getElementById("connect").onclick = async () => {
-      try {
-        device = await navigator.usb.requestDevice({
-          filters: [{ vendorId: 0x2341 }] // Arduino MicroのVendor ID
-        });
-        await device.open();
-        await device.selectConfiguration(1);
-        await device.claimInterface(1);  // WebUSBライブラリが使用しているinterface
-        log("✅ デバイスに接続しました");
-      } catch (e) {
-        log("接続失敗: " + e);
-      }
-    };
+  document.getElementById("connect").onclick = async () => {
+  try {
+    device = await navigator.usb.requestDevice({
+      filters: [{ vendorId: 0x2341 }]
+    });
+    await device.open();
+
+    console.log("👉 デバイス情報:");
+    console.log(device.configurations);
+
+    await device.selectConfiguration(1);
+    await device.claimInterface(2);  // 仮で 2 にしてみる（1が失敗する場合あり）
+
+    console.log("✅ デバイスに接続しました");
+  } catch (e) {
+    console.log("❌ 接続失敗:", e);
+  }
+};
 
     document.getElementById("send").onclick = async () => {
       const text = document.getElementById("input").value + "\n";
