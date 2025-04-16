@@ -1,58 +1,48 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebUSB 接続テスト</title>
+  <title>WebUSB Echo</title>
 </head>
 <body>
-    <h1>WebUSB 接続テスト</h1>
-    <button id="connect">接続</button>
+  <h2>🔌 WebUSB Echo 通信テスト</h2>
+  <button id="connect">Arduinoに接続</button><br><br>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            let device;
+  <input id="input" type="text" placeholder="メッセージ入力">
+  <button id="send">送信</button>
+  <pre id="log"></pre>
 
-            document.getElementById('connect').addEventListener('click', async () => {
-                console.log("ボタンクリック: 接続開始");
+  <script>
+    let device;
 
-                try {
-                    console.log("🔌 接続中...");
+    const log = (msg) => {
+      document.getElementById("log").textContent += msg + "\n";
+    };
 
-                    // Arduinoデバイスを選択
-                    device = await navigator.usb.requestDevice({
-                        filters: [{ vendorId: 0x2341 }] // ArduinoのベンダーID
-                    });
-
-                    console.log("デバイスが選択されました:", device);
-                    console.log("デバイスの設定数:", device.configurations.length);
-
-                    // デバイスをオープン
-                    await device.open();  // デバイスを開く
-                    console.log("🔧 デバイスオープン完了");
-
-                    // 利用可能な設定番号を確認して選択
-                    for (let i = 0; i < device.configurations.length; i++) {
-                        console.log(`設定番号 ${i}:`, device.configurations[i]);
-                    }
-
-                    // 設定を選択（デフォルトの設定番号0を試してみる）
-                    await device.selectConfiguration(0);  // 設定番号0を選択
-                    console.log("🔧 設定選択完了");
-
-                    // 設定選択後のインターフェース情報を表示
-                    console.log("インターフェース情報:", device.interfaces);
-
-                    // インターフェースをクレーム
-                    await device.claimInterface(0);  // インターフェース番号0をクレーム
-                    console.log("✅ インターフェースクレーム完了");
-
-                } catch (err) {
-                    console.error("❌ エラー:", err);
-                    alert(`エラー: ${err.message}`);
-                }
-            });
+    document.getElementById("connect").onclick = async () => {
+      try {
+        device = await navigator.usb.requestDevice({
+          filters: [{ vendorId: 0x2341 }] // Arduino MicroのVendor ID
         });
-    </script>
+        await device.open();
+        await device.selectConfiguration(1);
+        await device.claimInterface(1);  // WebUSBライブラリが使用しているinterface
+        log("✅ デバイスに接続しました");
+      } catch (e) {
+        log("接続失敗: " + e);
+      }
+    };
+
+    document.getElementById("send").onclick = async () => {
+      const text = document.getElementById("input").value + "\n";
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      try {
+        await device.transferOut(3, data); // endpoint番号は3か4が多い
+        log("送信: " + text.trim());
+      } catch (e) {
+        log("送信失敗: " + e);
+      }
+    };
+  </script>
 </body>
 </html>
