@@ -1,59 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <title>WebUSB Echo</title>
+  <meta charset="UTF-8">
+  <title>WebUSB Echo Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; }
+    textarea { width: 100%; height: 200px; }
+    input[type="text"] { width: 70%; padding: 0.5em; }
+    button { padding: 0.5em 1em; margin-left: 0.5em; }
+  </style>
 </head>
 <body>
-  <h2>🔌 WebUSB ho 通信テスト</h2>
-  <button id="connect">Arduinoに接続</button><br><br>
-
-  <input id="input" type="text" placeholder="メッセージ入力">
+  <h1>🔌 WebUSB Echo 通信テスト</h1>
+  <button id="connect">デバイス接続</button>
+  <br><br>
+  <input type="text" id="input" placeholder="Arduino に送信する文字列">
   <button id="send">送信</button>
-  <pre id="log"></pre>
+  <br><br>
+  <textarea id="log" readonly></textarea>
 
   <script>
     let device;
 
-    const log = (msg) => {
-      document.getElementById("log").textContent += msg + "\n";
-    };
-
-document.getElementById("connect").onclick = async () => {
-  try {
-    device = await navigator.usb.requestDevice({
-      filters: [{ vendorId: 0x2341 }]  // ArduinoのVID
-    });
-    await device.open();
-    await device.selectConfiguration(1);
-
-    console.log("✅ USB 構成情報:");
-    for (const iface of device.configuration.interfaces) {
-      console.log("Interface Number:", iface.interfaceNumber);
-      for (const alt of iface.alternates) {
-        console.log("  Class:", alt.interfaceClass);
-        for (const ep of alt.endpoints) {
-          console.log(`    Endpoint: ${ep.endpointNumber}, Direction: ${ep.direction}`);
-        }
-      }
+    function log(msg) {
+      const logArea = document.getElementById("log");
+      logArea.value += msg + "\n";
+      logArea.scrollTop = logArea.scrollHeight;
     }
 
-    // 一旦 interface 2 を仮に選択しておく（ログを見て調整可能）
-    await device.claimInterface(2);
-    console.log("✅ デバイスに接続しました");
-  } catch (e) {
-    console.error("❌ 接続エラー:", e);
-  }
-};
+    document.getElementById("connect").onclick = async () => {
+      try {
+        device = await navigator.usb.requestDevice({
+          filters: [{ vendorId: 0x2341 }]  // Arduino のベンダーID
+        });
+
+        await device.open();
+        await device.selectConfiguration(1);
+        await device.claimInterface(2);  // interfaceNumber 2（ログで確認済み）
+
+        log("✅ デバイスに接続しました");
+
+        // 接続時の構成表示（デバッグ用）
+        for (const iface of device.configuration.interfaces) {
+          log("Interface Number: " + iface.interfaceNumber);
+          for (const alt of iface.alternates) {
+            log("  Class: " + alt.interfaceClass);
+            for (const ep of alt.endpoints) {
+              log(`    Endpoint: ${ep.endpointNumber}, Direction: ${ep.direction}`);
+            }
+          }
+        }
+
+      } catch (e) {
+        log("❌ 接続失敗: " + e);
+      }
+    };
 
     document.getElementById("send").onclick = async () => {
+      if (!device) {
+        log("⚠️ 先にデバイスへ接続してください");
+        return;
+      }
+
       const text = document.getElementById("input").value + "\n";
       const encoder = new TextEncoder();
       const data = encoder.encode(text);
+
       try {
-        await device.transferOut(3, data); // endpoint番号は3か4が多い
+        await device.transferOut(4, data);  // endpoint 4: PC → Arduino
         log("送信: " + text.trim());
+
+        const result = await device.transferIn(5, 64);  // endpoint 5: Arduino → PC
+        const decoder = new TextDecoder();
+        const receivedText = decoder.decode(result.data);
+        log("受信: " + receivedText.trim());
       } catch (e) {
-        log("送信失敗: " + e);
+        log("❌ 通信エラー: " + e);
       }
     };
   </script>
