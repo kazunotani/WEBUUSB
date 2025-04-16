@@ -32,6 +32,21 @@
         log("❌ 接続失敗: " + e.message);
       }
     };
+const readResponse = async () => {
+  const result = await device.transferIn(5, 64); // endpoint 5, IN
+  const decoder = new TextDecoder();
+  log("🟢 Arduino says: " + decoder.decode(result.data));
+};
+
+document.getElementById("ledOn").onclick = async () => {
+  await sendCommand("ON");
+  await readResponse();
+};
+
+document.getElementById("ledOff").onclick = async () => {
+  await sendCommand("OFF");
+  await readResponse();
+};
 
     const sendCommand = async (cmd) => {
       const encoder = new TextEncoder();
