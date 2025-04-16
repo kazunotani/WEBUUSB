@@ -4,7 +4,7 @@
   <title>WebUSB Echo</title>
 </head>
 <body>
-  <h2>🔌 WebUSB Efsdcho 通信テスト</h2>
+  <h2>🔌 WebUSB ho 通信テスト</h2>
   <button id="connect">Arduinoに接続</button><br><br>
 
   <input id="input" type="text" placeholder="メッセージ入力">
@@ -18,22 +18,30 @@
       document.getElementById("log").textContent += msg + "\n";
     };
 
-  document.getElementById("connect").onclick = async () => {
+document.getElementById("connect").onclick = async () => {
   try {
     device = await navigator.usb.requestDevice({
-      filters: [{ vendorId: 0x2341 }]
+      filters: [{ vendorId: 0x2341 }]  // ArduinoのVID
     });
     await device.open();
-
-    console.log("👉 デバイス情報:");
-    console.log(device.configurations);
-
     await device.selectConfiguration(1);
-    await device.claimInterface(2);  // 仮で 2 にしてみる（1が失敗する場合あり）
 
+    console.log("✅ USB 構成情報:");
+    for (const iface of device.configuration.interfaces) {
+      console.log("Interface Number:", iface.interfaceNumber);
+      for (const alt of iface.alternates) {
+        console.log("  Class:", alt.interfaceClass);
+        for (const ep of alt.endpoints) {
+          console.log(`    Endpoint: ${ep.endpointNumber}, Direction: ${ep.direction}`);
+        }
+      }
+    }
+
+    // 一旦 interface 2 を仮に選択しておく（ログを見て調整可能）
+    await device.claimInterface(2);
     console.log("✅ デバイスに接続しました");
   } catch (e) {
-    console.log("❌ 接続失敗:", e);
+    console.error("❌ 接続エラー:", e);
   }
 };
 
