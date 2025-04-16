@@ -1,89 +1,45 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Arduino Micro WebUSB LED Control</title>
-  <style>
-    body { font-family: sans-serif; padding: 2em; }
-    button { padding: 0.5em 1em; margin: 0.5em; font-size: 16px; }
-    #status { margin-top: 20px; }
-  </style>
+  <title>WebUSB LED Control</title>
 </head>
 <body>
-  <h1>🔌 WebUSBでArduino Micrfoの内部LEDを制御</h1>
+  <h1>WebUSB LED Control</h1>
   <button id="connect">デバイス接続</button>
   <button id="ledOn" disabled>LED ON</button>
   <button id="ledOff" disabled>LED OFF</button>
-  
-  <div id="status"></div>
+  <pre id="log"></pre>
 
   <script>
     let device;
-    let connected = false;
-
-    function log(msg) {
-      const statusDiv = document.getElementById("status");
-      statusDiv.textContent = msg;
-      console.log(msg);
-    }
+    const log = (msg) => {
+      document.getElementById('log').textContent += msg + '\n';
+    };
 
     document.getElementById("connect").onclick = async () => {
-      if (connected) {
-        log("既に接続されています。");
-        return;
-      }
-
       try {
         device = await navigator.usb.requestDevice({
-          filters: [{ vendorId: 0x2341 }]  // ArduinoのベンダーID
+          filters: [{ vendorId: 0x2341 }] // ArduinoのVID
         });
-        log(`デバイス接続: ${device.productName}`);
-
         await device.open();
         await device.selectConfiguration(1);
-        await device.claimInterface(2);  // interfaceNumberは2（WebUSBの場合）
-
-        log("✅ Arduino Micro接続成功！");
+        await device.claimInterface(2); // interfaceNumberは2（要調整）
+        log("✅ 接続成功");
         document.getElementById("ledOn").disabled = false;
         document.getElementById("ledOff").disabled = false;
-        connected = true;
-
       } catch (e) {
-        log(`❌ 接続失敗: ${e}`);
+        log("❌ 接続失敗: " + e.message);
       }
     };
 
-    document.getElementById("ledOn").onclick = async () => {
-      if (!device) {
-        log("デバイスが接続されていません");
-        return;
-      }
-
+    const sendCommand = async (cmd) => {
       const encoder = new TextEncoder();
-      const data = encoder.encode("ON\n");
-      try {
-        await device.transferOut(4, data);  // エンドポイント4にデータを送信
-        log("LEDをONにしました");
-      } catch (e) {
-        log(`❌ 通信エラー: ${e}`);
-      }
+      await device.transferOut(4, encoder.encode(cmd + '\n'));
     };
 
-    document.getElementById("ledOff").onclick = async () => {
-      if (!device) {
-        log("デバイスが接続されていません");
-        return;
-      }
-
-      const encoder = new TextEncoder();
-      const data = encoder.encode("OFF\n");
-      try {
-        await device.transferOut(4, data);  // エンドポイント4にデータを送信
-        log("LEDをOFFにしました");
-      } catch (e) {
-        log(`❌ 通信エラー: ${e}`);
-      }
-    };
+    document.getElementById("ledOn").onclick = () => sendCommand("ON");
+    document.getElementById("ledOff").onclick = () => sendCommand("OFF");
   </script>
 </body>
 </html>
