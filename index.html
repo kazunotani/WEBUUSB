@@ -2,59 +2,61 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>WebUSB LED Control</title>
+  <title>WebSerial LED Control</title>
 </head>
 <body>
-  <h1>WebUSB LED Control</h1>
-  <button id="connect">デバイス接続</button>
+  <h1>WebSerial LED Control</h1>
+  <button id="connect">Connect</button>
   <button id="ledOn" disabled>LED ON</button>
   <button id="ledOff" disabled>LED OFF</button>
   <pre id="log"></pre>
 
   <script>
-    let device;
+    let port;
+    let writer, reader;
+
     const log = (msg) => {
-      document.getElementById('log').textContent += msg + '\n';
+      document.getElementById("log").textContent += msg + "\n";
     };
 
     document.getElementById("connect").onclick = async () => {
       try {
-        device = await navigator.usb.requestDevice({
-          filters: [{ vendorId: 0x2341 }] // ArduinoのVID
-        });
-        await device.open();
-        await device.selectConfiguration(1);
-        await device.claimInterface(2); // interfaceNumberは2（要調整）
-        log("✅ 接続成功");
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
+
+        const textEncoder = new TextEncoderStream();
+        const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+        writer = textEncoder.writable.getWriter();
+
+        const textDecoder = new TextDecoderStream();
+        const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+        reader = textDecoder.readable.getReader();
+
+        log("✅ Connected to device!");
+
+        readLoop(); // 開始
+
         document.getElementById("ledOn").disabled = false;
         document.getElementById("ledOff").disabled = false;
       } catch (e) {
-        log("❌ 接続失敗: " + e.message);
+        log("❌ Connection failed: " + e);
       }
     };
-const readResponse = async () => {
-  const result = await device.transferIn(5, 64); // endpoint 5, IN
-  const decoder = new TextDecoder();
-  log("🟢 Arduino says: " + decoder.decode(result.data));
-};
 
-document.getElementById("ledOn").onclick = async () => {
-  await sendCommand("ON");
-  await readResponse();
-};
-
-document.getElementById("ledOff").onclick = async () => {
-  await sendCommand("OFF");
-  await readResponse();
-};
-
-    const sendCommand = async (cmd) => {
-      const encoder = new TextEncoder();
-      await device.transferOut(4, encoder.encode(cmd + '\n'));
+    const send = async (msg) => {
+      await writer.write(msg + "\n");
     };
 
-    document.getElementById("ledOn").onclick = () => sendCommand("ON");
-    document.getElementById("ledOff").onclick = () => sendCommand("OFF");
+    document.getElementById("ledOn").onclick = () => send("ON");
+    document.getElementById("ledOff").onclick = () => send("OFF");
+
+    async function readLoop() {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        log("🟢 " + value);
+      }
+    }
   </script>
 </body>
 </html>
