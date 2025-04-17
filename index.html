@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <a href="#"id="click">Connect</a>
+  <script>
+    click.onclick = function(){
+      navigator.usb.requestDevice({filters:[
+          {'vendorId':0x2341}
+      ]})
+      .then(device =>{
+        console.log(device)
+        console.log(device.productId.toString(16))
+        console.log(device.vendorId.toString(16))
+
+      })
+      .catch(error =>{
+        console.log(error)
+
+      })
+    }
+  </script>
+</body>
+</html>
