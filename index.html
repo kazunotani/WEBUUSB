@@ -7,22 +7,36 @@
 </head>
 <body>
   <a href="#"id="click">Connect</a>
+  <script src="serial.js"></script>
   <script>
-    click.onclick = function(){
-      navigator.usb.requestDevice({filters:[
-          {'vendorId':0x2341}
-      ]})
-      .then(device =>{
-        console.log(device)
-        console.log(device.productId.toString(16))
-        console.log(device.vendorId.toString(16))
+     serial.requestPort = function() {
+    const filters = [
+     { 'vendorId': 0x2341, 'productId': 0x8037 }, // Arduino Micro
+    ];
+    return navigator.usb.requestDevice({ 'filters': filters }).then(
+      device => new serial.Port(device)
+    );
+  }
+  var connectButton = document.getElementById("click")
 
-      })
-      .catch(error =>{
-        console.log(error)
-
+  connectButton.addEventListener("click",function(){
+    if(port){
+      connectButton.textContent = "connect"
+      port.disconnect()
+      port = null
+    }else{
+      serial.requestPort().then(selectedPort =>{
+        port = selectedPort
+        port.connect(() => {
+          console.log("conected!");
+          connectButton.textContent = "disonnect"
+          port.onReceive = data => {console.log(textDecoder.decode(data))}
+          port.onReceiveError = error => {console.log("receive error:" + error)}
+        });
       })
     }
+  })
+
   </script>
 </body>
 </html>
