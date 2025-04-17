@@ -17,7 +17,9 @@
       device => new serial.Port(device)
     );
   }
+  var port
   var connectButton = document.getElementById("click")
+  var textDecoder = new TextDecoder();
 
   connectButton.addEventListener("click",function(){
     if(port){
