@@ -2,66 +2,100 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Web Serial API Demo</title>
 </head>
 <body>
-  <a href="#"id="click">Cfdonnect</a>
-  <p>
-  <button id="on">ON</button>
-  <button id="off">OFF</button>
-  </p>
-  <script src="serial.js"></script>
-  <script>
-     serial.requestPort = function() {
-    const filters = [
-     { 'vendorId': 0x2341, 'productId': 0x8037 }, // Arduino Micro
-    ];
-    return navigator.usb.requestDevice({ 'filters': filters }).then(
-      device => new serial.Port(device)
-    );
-  }
-  var port
-  var connectButton = document.getElementById("click")
-  var textDecoder = new TextDecoder();
-  var textEncoder = new TextEncoder();
+  <style>
+div {
 
+  font-size: 50rem; 
+}
+  </style>
+  <button id="connect">接続</button>
+  <input type="text" id="input" placeholder="文字を送信" />
+  <button id="send">送信</button>
+  <div id="nu">0</div>
 
-document.querySelector("#on").addEventListener("click",function(){
-  if(port !== undefined){
-    port.send(textEncoder.encode("H").catch(error=>{
-      console.log("onerr" + error)
-    }))
-  }
-})
-document.querySelector("#off").addEventListener("click",function(){
-  if(port !== undefined){
-    port.send(textEncoder.encode("L").catch(error=>{
-      console.log("offerr" + error)
-    }))
-  }
-})
+  <script>//.style.display
+    let port;
+    let writer;
+    let reader;
+    let FLAG = 0;
 
+    const connectButton = document.getElementById('connect');
+    const sendButton = document.getElementById('send');
+    const inputField = document.getElementById('input');
+    const Nu = document.getElementById('nu');
+    connectButton.addEventListener('click', async () => {
+      try {
+        port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
 
+        const encoder = new TextEncoderStream();
+        encoder.readable.pipeTo(port.writable);
+        writer = encoder.writable.getWriter();
 
-  connectButton.addEventListener("click",function(){
-    if(port){
-      connectButton.textContent = "connect"
-      port.disconnect()
-      port = null
-    }else{
-      serial.requestPort().then(selectedPort =>{
-        port = selectedPort
-        port.connect(() => {
-          console.log("conected!");
-          connectButton.textContent = "disonnect"
-          port.onReceive = data => {console.log(textDecoder.decode(data))}
-          port.onReceiveError = error => {console.log("receive error:" + error)}
-        });
-      })
+        const decoder = new TextDecoderStream();
+        port.readable.pipeTo(decoder.writable);
+        reader = decoder.readable.getReader();
+        connectButton.style.display = "none";
+        sendButton.style.display = "none";
+        inputField.style.display = "none";
+        readLoop();
+      } catch (err) {
+        console.error('接続エラー:', err);
+      }
+    });
+
+    sendButton.addEventListener('click', async () => {
+      const text = inputField.value + "\n";
+      await writer.write(text);
+    });
+    document.addEventListener("keydown", function(event) {
+    if (event.key === "d" || event.key === "D") {
+      const nu = document.getElementById("Nu");
+      if (Nu.style.display === "none") {
+        Nu.style.display = "block";
+      } else {
+        Nu.style.display = "none";
+      }
     }
-  })
+  });
+    // キーボード入力をキャッチするイベントリスナー
+    // 数字の入力を格納する変数（3桁分）
+    let inputValue = '';
 
+    // キーボード入力をキャッチするイベントリスナー
+    window.addEventListener('keydown', function(event) {
+      // 数字のキーだけを処理
+      if (event.key >= '0' && event.key <= '9') {
+        inputValue += event.key;  // 入力された数字を追加
+
+        // 3桁に達した場合は最初の桁を削除して左にスライド
+        if (inputValue.length > 3) {
+          inputValue = inputValue.slice(1);  // 最初の桁を削除
+        }
+
+        // 3桁の数字をdivに反映
+        Nu.textContent = inputValue.padStart(3, '0');  // 必要なら0で埋める
+      }
+    });
+    async function readLoop() {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value) {
+          console.log(value)
+          FLAG = value;
+             if(value == "a\r\n")
+             {Nu.textContent = parseInt(Nu.textContent) + 1;}
+              
+
+
+
+        }
+      }
+    }
   </script>
 </body>
 </html>
