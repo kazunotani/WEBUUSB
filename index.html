@@ -1,433 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title></title>
-    <style>
-    .example{
-      z-index: -1;
-       width: 800px;
-	     height: 400px;
-       padding: 10px;
-       border: 4px solid #0011ff;
-       background: #ffffff;
-       position:absolute;
-       top: 50px;
-       left:1040px;}
-      .example2{
-         position:absolute;
-         top: 80px;
-         left:1050px;
-         width: 350px;
-         height:80px;
-         font-size : 300%;
-      }
-      .example3{
-       border-radius: 50%;
-       display: flex;
-       justify-content: center;
-       align-items: center;
-       width: 300px;
-       height: 300px;
-       background: #ff7402;
-       color: #000000;
-       text-decoration: none;
-       text-align: center;
-       margin: 10px 0;
-       position:absolute;
-       top: 50px;
-       left:1550px;
-       font-size : 400%;}
-       .example4{
-        border-radius: 100px;
-       display: block;
-       width: 600px;
-       padding: 15px;
-       box-sizing: border-box;
-       background: #ff0000;
-       color: #000000;
-       text-decoration: none;
-       text-align: center;
-       margin: 10px 0;
-       font-size : 200%;
-      }
-      .example77{
-       box-sizing: border-box;
-       background: #7bff00;
-       color: #000000;
-       font-size : 200%;
-      }
-      .example88{
-       box-sizing: border-box;
-       background: #00eeff;
-       color: #000000;
-       font-size : 200%;
-      }
-
-      .field{
-        display:flex
-      }
-      button{
-        width: 300px;
-        padding: 10px;
-        font-size : 175%;
-      }
-      input[type=number] {
-        height: 40px; 
-        width : 120px;
-        font-size: 175%;
-        position: relative;
-        top: 13px;}
-        input[type=text] {
-        height: 40px; 
-        width : 120px;
-        font-size: 175%;
-        position: relative;
-        top: 13px;}
-      input[type=checkbox] {
-	      width:			20px;
-	      height:			15px;
-	      -moz-transform:		scale(3);
-	      -webkit-transform:	scale(3);
-        transform:		scale(3);
-        position:absolute;
-       top: 300px;
-       left:1450px;}
-        select {
-        height: 40px; 
-        width : 120px;
-        font-size: 175%;
-        position: relative;
-        top: 16px;}
-      .example5{
-         position:absolute!important;
-         top: 250px!important;
-         left:1050px!important;
-         width: 370px!important;
-         height:200px!important;
-         font-size : 1300%!important;}
-      .example6{
-        position: absolute;
-        font-size: 150%;
-        left:1050px;
-        top: 180px;}
-        .example9{
-        border-radius: 100px;
-       display: block;
-       width: 300px;
-       padding: 15px;
-       box-sizing: border-box;
-       background: rgb(255, 230, 0);
-       color: #000000;
-       text-decoration: none;
-       text-align: center;
-       margin: 10px 0;
-       font-size : 200%;
-       position: absolute;
-       left:1550px;
-       top: 365px;
-      }
-      #arrow{
-      font-size:3em;
-         position:absolute;
-         top:170px;
-         left:750px;
-      } 
-      .file-label {
-  display: inline-block;
-  padding: 20px 40px; /* ← 大きく */
-  background-color: #00eeff; /* ← 色を指定 */
-  color: #000; /* 黒文字（見やすく） */
-  font-size: 24px; /* ← 文字も大きく */
-  cursor: pointer;
-  transition: background-color 0.3s;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* ← ふわっと影をつける */
-  border: 3px solid #000000;
-}
-
-.file-label:hover {
-  background-color: #00eeff; /* ← ホバー時に少し濃く */
-}
-.file-label2 {
-  display: inline-block;
-  padding: 20px 40px; /* ← 大きく */
-  background-color: #eeff00; /* ← 色を指定 */
-  color: #000; /* 黒文字（見やすく） */
-  font-size: 25px; /* ← 文字も大きく */
-  cursor: pointer;
-  transition: background-color 0.3s;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* ← ふわっと影をつける */
-  border: 3px solid #000000;
-}
-      </style>
+  <meta charset="UTF-8">
+  <title>Web Serial API Demo</title>
 </head>
 <body>
-  <button id="connect" class="example77">接続</button>
-  <div id="arrow" >←</div>
-  <button size = "30px"onclick = "Add();">追加</button>
-  <button onclick = "Rem();">一番下を削除</button>
-  <a href="#" class="example4" onclick = "Run();"id = "STARTR">実行</a>
-  <a href="#" class="example9" onclick = "Re();"id = "Re">テンポ変更</a>
-  <div class = "field" id="status1">
-    <p ><font size="6">テンポ&nbsp&nbsp</font></p>
-    <input type="number"  min = "1" max="254"height="10" id = "tempo">
-    <p ><font size="6">&nbsp&nbsp拍数&nbsp&nbsp</font></p>
-    <input type="number"  min = "1" max="1024"height="10"id = "beat">
-    <p ><font size="6">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspメモ&nbsp&nbsp</font></p>
-    <input type="text"id = "memo">
-  </div>
-  <a onclick = "StartStop();" id = "STARTS"href="#" class="example3">スタート</a>
-  <input class = "example5"type="number"  min = "1" max="255"height="10" id = "Itempo" readonly>
-  <p class = "example6">テンポ Nキーを押しながら数字入力</p>
-  <div class="example"></div>
-  <button id="connect"class = "file-label"onclick = "SAVE();" >セーブ</button>
-  <label class="file-label">
-    ファイルを選択
-    <input type="file" id="fileInput" hidden>
-  </label>
-  <button id="RESET"class = "file-label2"onclick = "RESET();"  >リセット</button>
+  <style>
+div {
 
-    
-  <script>
+  font-size: 50rem; 
+}
+  </style>
+  <button id="connect">接続</button>
+  <input type="text" id="input" placeholder="文字を送信" />
+  <button id="send">送信</button>
+  <div id="nu">0</div>
+
+  <script>//.style.display
     let port;
     let writer;
-    //   if poxY=160 then1 1➡2 ,,, 
-    //!!!!RUN➡BREAK         START➡STOP
-    const arrow = document.getElementById("arrow");
-    let arrowY = 170;
-    const fewtime = 10;
-    time = 200;
-    let start = 0;
-    let end = 0;
-    let prog;
-    let volumecount = 1;
-    document.getElementById('connect').addEventListener('click', async () => {
+    let reader;
+    let FLAG = 0;
+
+    const connectButton = document.getElementById('connect');
+    const sendButton = document.getElementById('send');
+    const inputField = document.getElementById('input');
+    const Nu = document.getElementById('nu');
+    connectButton.addEventListener('click', async () => {
       try {
         port = await navigator.serial.requestPort();
         await port.open({ baudRate: 9600 });
-        writer = port.writable.getWriter();
-        console.log('接続完了');
-      } catch (error) {
-        console.error('接続エラー:', error);
+
+        const encoder = new TextEncoderStream();
+        encoder.readable.pipeTo(port.writable);
+        writer = encoder.writable.getWriter();
+
+        const decoder = new TextDecoderStream();
+        port.readable.pipeTo(decoder.writable);
+        reader = decoder.readable.getReader();
+        connectButton.style.display = "none";
+        sendButton.style.display = "none";
+        inputField.style.display = "none";
+        readLoop();
+      } catch (err) {
+        console.error('接続エラー:', err);
       }
     });
-    window.addEventListener("keydown",(event) => {
-    switch(event.key){
-    case "ArrowUp":
-       if(arrowY != 170){arrowY -= 78;}
-       break;
-    case "ArrowDown":
-      if(arrowY != (volumecount - 1)*78 + 170){ arrowY += 78;}
-       break;
-    }
-    arrow.style.top = arrowY + "px";
+
+    sendButton.addEventListener('click', async () => {
+      const text = inputField.value + "\n";
+      await writer.write(text);
     });
-    window.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") {
-      StartStop();
+    document.addEventListener("keydown", function(event) {
+    if (event.key === "d" || event.key === "D") {
+      const nu = document.getElementById("Nu");
+      if (Nu.style.display === "none") {
+        Nu.style.display = "block";
+      } else {
+        Nu.style.display = "none";
+      }
     }
   });
+    // キーボード入力をキャッチするイベントリスナー
+    // 数字の入力を格納する変数（3桁分）
+    let inputValue = '';
 
+    // キーボード入力をキャッチするイベントリスナー
+    window.addEventListener('keydown', function(event) {
+      // 数字のキーだけを処理
+      if (event.key >= '0' && event.key <= '9') {
+        inputValue += event.key;  // 入力された数字を追加
 
+        // 3桁に達した場合は最初の桁を削除して左にスライド
+        if (inputValue.length > 3) {
+          inputValue = inputValue.slice(1);  // 最初の桁を削除
+        }
 
-  
-
-  let inputValue = '';
-
-// キーボード入力をキャッチするイベントリスナー
-window.addEventListener('keydown', function(event) {
-    if (event.key === 'n') {
-      isNPressed = true;
-    }
-  // 数字のキーだけを処理
-  if (isNPressed &&  event.key >= '0' && event.key <= '9') {
-    inputValue += event.key;  // 入力された数字を追加
-
-    // 3桁に達した場合は最初の桁を削除して左にスライド
-    if (inputValue.length > 3) {
-      inputValue = inputValue.slice(1);  // 最初の桁を削除
-    }
-
-    // 3桁の数字をdivに反映
-    document.getElementById("Itempo").value = inputValue.padStart(3, '0');  // 必要なら0で埋める
-  }
-});
-
-window.addEventListener('keyup', function(event) {
-    if (event.key === 'n') {
-      isNPressed = false;
-    }
-  });
-
-    function Add(){
-       var original = document.getElementById("status1");
-       var before = document.getElementById("status" + volumecount);
-       var cloned = original.cloneNode(true);
-       volumecount++;
-       cloned.id = "status" + volumecount;
-       before.after(cloned);
-    }     
-    function Rem(){
-      if(volumecount != 1){
-        var remt = document.getElementById("status" + volumecount);
-        remt.remove();
-        volumecount--;
+        // 3桁の数字をdivに反映
+        Nu.textContent = inputValue.padStart(3, '0');  // 必要なら0で埋める
       }
-   }
-
-function RESET(){
-  Send("RESET");
-  document.getElementById("RESET").innerText = "リセット中..."
-  window.setTimeout(() => {
-    window.location.reload();
-      }, 5000);
-
-}
-  function SAVE(){
-      var text = "";
-
-      for(var i = 1;i != volumecount + 1 ;i++){
-        prog = document.getElementById("status" + i);
-        text += (prog.querySelector("#tempo").value+ ":" );
-        text += (prog.querySelector("#beat").value + ":");
-        text += (prog.querySelector("#memo").value);
-        if(i!=volumecount){text += "\n"}
-      }
-      const blob = new Blob([text], { type: 'text/plain' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = "DATA.txt";
-      link.click();
-      
-  }
-  document.getElementById('fileInput').addEventListener('change', function(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const text = e.target.result;
-    // 改行で分割する
-    const lines = text.split('\n');
-    console.log(lines); 
-    while(volumecount != 1){
-    Rem();
-  }
-  for (let i = 0; i < lines.length; i++) {
-    prog = document.getElementById("status" + (i + 1));
-    parts = lines[i].split(":");
-    prog.querySelector("#tempo").value = parts[0];
-    prog.querySelector("#beat").value = parts[1];
-    prog.querySelector("#memo").value = parts[2];
-    Add();
-  }
-  Rem();
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-    
-});
+    });
+    async function readLoop() {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        if (value) {
+          console.log(value)
+          FLAG = value;
+             if(value == "a\r\n")
+             {Nu.textContent = parseInt(Nu.textContent) + 1;}
+              
 
 
 
-
-
-   function InputRead(num){     
-      prog = document.getElementById("status" + num);
-      window.setTimeout(() => {
-      Send(Math.floor(prog.querySelector("#tempo").value));
-      }, fewtime);
-      window.setTimeout(() => {
-          Send((Math.floor(prog.querySelector("#beat").value)));
-      },time);
-
-    }
-    
-    function ReadLoop(num){
-        if(num <=  volumecount){
-        setTimeout(function(){InputRead(num)}, time);
-        setTimeout(function(){ReadLoop(++num)}, time * 2); }
-        if(num ==  volumecount){
-          setTimeout(function(){Send("RUN")},time * 3);}
-}
-    function Program(){
-      console.log("startsending...");
-      setTimeout(function(){Send("RUNSEND");
-      document.getElementById("STARTR").textContent = "実行中(クリックで終了)";}, fewtime);
-      ReadLoop((arrowY-170)/78+1);
-    }
-    function Run(){
-     if(document.getElementById("STARTS").textContent == "スタート"){
-      if(document.getElementById("STARTR").textContent == "実行")
-      {
-          Program();
-      }
-      else if(document.getElementById("STARTR").textContent == "実行中(クリックで終了)")
-      {
-        setTimeout(function(){SendByte("252")/*252→break,254→stop*/}, fewtime);
-        document.getElementById("STARTR").textContent = "実行";
-      }
-     }
-    }
-    function StartStop(){
-      if(document.getElementById("STARTS").textContent == "スタート")
-      {
-        setTimeout(function(){Send("START")}, fewtime);
-        document.getElementById("STARTS").textContent = "ストップ";
-        window.setTimeout(() => {
-          Send(Math.floor(document.getElementById("Itempo").value));
-         }, time);
-
-      }
-      else if(document.getElementById("STARTS").textContent == "ストップ")
-      {
-        setTimeout(function(){SendByte(254/*STOP*/)}, fewtime);
-        document.getElementById("STARTS").textContent = "スタート";
-
+        }
       }
     }
-    function Re()
-    {
-      setTimeout(function(){SendByte(254/*STOP*/)}, fewtime);
-      window.setTimeout(() => {
-          Send("START");
-         }, time);
-      window.setTimeout(() => {
-          Send(Math.floor(document.getElementById("Itempo").value));
-         }, time*2);
-    }
-
-
-
-    async function Send(number){//string
-      console.log(number);
-       
-     // シリアルポートが接続されていない場合、接続を試みる
-     if (!port) {
-        await connectToPort();
-      }
-
-      // 文字列をバイト列に変換
-      const encoder = new TextEncoder();
-      const data = encoder.encode(number + '\n');
-
-      // データを書き込み
-      if (writer) {
-        await writer.write(data);
-        console.log('送信しました:', number);
-      }
-    }
-
-
-    function SendByte(number){//Byte
-       console.log(number);
-       window.setTimeout(async()=> {     
-        var value = number; // 送りたい1バイトの数値
-        const data = new Uint8Array([value]);
-        await writer.write(data);
-        console.log('送信しました: ' + value);},fewtime);
-    }
-
   </script>
 </body>
 </html>
